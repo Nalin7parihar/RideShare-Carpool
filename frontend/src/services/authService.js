@@ -21,24 +21,18 @@ const AuthService = {
   },
 
   signUpwithEmail: async (email, password, displayName = "") => {
-    console.log("⏳ Starting Firebase Sign-Up Process...");
-    
-    //_validateEmailPassword(email, password); 
-    console.log("✅ Email & Password Validated");
-  
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("✅ Firebase User Created:", result.user);
+
   
       if (displayName) {
         await updateProfile(result.user, { displayName });
-        console.log("✅ Display Name Updated:", displayName);
+
       }
   
       return result.user;
     } catch (error) {
       const errorMessage = _formatAuthError(error);
-      console.error("❌ Firebase Sign-Up Error:", errorMessage);
       throw new Error(errorMessage);
     }
   },
@@ -47,13 +41,13 @@ const AuthService = {
   signInwithEmail: async (email, password) => {
     console.log("⏳ Starting Firebase Sign-in Process...");
     //_validateEmailPassword(email, password);
-    console.log("✅ Email & Password Validated");
+
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("✅ Firebase User Created:", result.user);
+
       return result.user;
     } catch (error) {
-      console.error("Firebase Sign-In Error:", error.message);
+
       const errorMessage = _formatAuthError(error);
       throw new Error(errorMessage);
     }

@@ -23,6 +23,9 @@ export const signInWithGoogle = createAsyncThunk(
 export const signUpWithEmail = createAsyncThunk(
   "user/signUpWithEmail",
   async ({ email, password,fullname }, { rejectWithValue }) => {
+    console.log("Email : ",email);
+    console.log("Password : ",password);
+    console.log("Fullname : ",fullname);
     try {
       const user = await AuthService.signUpwithEmail(email,password,fullname);
       console.log("User : ",user);

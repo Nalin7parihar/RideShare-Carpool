@@ -15,6 +15,8 @@ const Auth = () => {
     name: '',
   });
 
+
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -29,11 +31,16 @@ const Auth = () => {
       return;
     }
     if(authMode === 'login') {
-      dispatch(signInWithEmail(formData.email,formData.password));
+      dispatch(signInWithEmail({email : formData.email,password : formData.password}));
       
     }
     else{
-      dispatch(signUpWithEmail(formData.email,formData.password,formData.name));
+      
+  dispatch(signUpWithEmail({ 
+    email: formData.email, 
+    password: formData.password, 
+    fullname: formData.fullname 
+  }));
         }
   };
   
