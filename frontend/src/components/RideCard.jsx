@@ -1,16 +1,27 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { fetchRides } from "../Store/rideSlice";
+import { useNavigate } from "react-router-dom";
 const RideCard = () => {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const today = new Date().toLocaleDateString(); // Format today's date
   const [passengers, setPassengers] = useState(1);
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ pickup, destination, date: today, passengers });
-    // Add logic to search for rides
+    const searchParams = {from: pickup, to: destination, passengers: passengers};
+    
+    dispatch(fetchRides(searchParams))
+      .unwrap()
+      .then(() => {
+        // Create URL with search parameters
+        navigate(`/bookRide?from=${encodeURIComponent(pickup)}&to=${encodeURIComponent(destination)}&passengers=${passengers}`);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch rides:', error);
+      });
   };
 
   return (

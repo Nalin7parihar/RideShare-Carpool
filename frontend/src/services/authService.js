@@ -21,6 +21,7 @@ const AuthService = {
   },
 
   signUpwithEmail: async (email, password, displayName = "") => {
+    _validateEmailPassword(email, password);
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -40,7 +41,7 @@ const AuthService = {
 
   signInwithEmail: async (email, password) => {
     console.log("⏳ Starting Firebase Sign-in Process...");
-    //_validateEmailPassword(email, password);
+    _validateEmailPassword(email, password);
 
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
