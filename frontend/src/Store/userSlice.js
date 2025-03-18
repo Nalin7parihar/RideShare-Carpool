@@ -1,6 +1,6 @@
 import { createSlice,createAsyncThunk } from "@reduxjs/toolkit";
 import AuthService from "../services/authService";
-import Auth from "../pages/Auth";
+
 
 const initialState = {
   user : JSON.parse(localStorage.getItem("user")) || null,

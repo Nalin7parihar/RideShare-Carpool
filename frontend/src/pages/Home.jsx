@@ -1,15 +1,16 @@
 import { useState } from "react";
 import React from "react";
-import { Link } from "react-router-dom";
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
 import RideCard from "../components/RideCard";
 import { motion } from "framer-motion";
+import AboutUsPopup from "../components/AboutUs";
 
-const Home = () => {
+const Home = ({formRef,scrollToForm}) => {
   
-  const [travelDate, setTravelDate] = useState(new Date());
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  
 
+  
   // Animation variants for consistent effects
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -48,16 +49,16 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex flex-col sm:flex-row justify-center gap-4"
           >
-            <Link to="/find-ride">
+            
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg hover:bg-blue-700 transition font-semibold text-lg"
+                onClick={scrollToForm}
               >
                 Find a Ride
               </motion.button>
-            </Link>
-            <Link to="/offer-ride">
+            
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -65,7 +66,7 @@ const Home = () => {
               >
                 Offer a Ride
               </motion.button>
-            </Link>
+           
           </motion.div>
         </div>
       </section>
@@ -79,9 +80,10 @@ const Home = () => {
           whileInView="visible"
           viewport={{ once: true }}
           className="w-full max-w-3xl bg-white p-6 md:p-8 rounded-xl shadow-xl mb-16 border border-gray-100"
+          ref={formRef}
         >
           <h3 className="text-2xl font-bold text-blue-600 mb-6">Book Your Next Trip</h3>
-          <RideCard />
+          <RideCard/>
         </motion.div>
 
         {/* How It Works */}
@@ -111,14 +113,25 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Link to="/how-it-works">
-              <button className="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center mx-auto">
-                Learn more about the process
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 010-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </Link>
+          <div>
+      {/* About Us Button */}
+      <button
+        onClick={() => {setIsOpen(true); setIsAboutUsOpen(true);}}
+        className="text-blue-600 font-semibold hover:text-blue-800 transition flex items-center mx-auto"
+      >
+        Learn more about the process
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 010-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+
+      {/* Render AboutUsModal when state is true */}
+      {isAboutUsOpen && <AboutUsPopup isOpen={isOpen} onClose={() => setIsOpen(false)} />}
+      </div>
           </div>
         </motion.section>
       </main>

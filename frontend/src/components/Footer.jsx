@@ -5,7 +5,7 @@ import { FaFacebook } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-blue-600 text-white py-6">
+    <footer className="bg-blue-600 text-white py-6 sticky">
     <div className="container mx-auto px-4">
       {/* Top section - stacks on small screens, side by side on medium+ */}
       <div className="flex flex-col md:flex-row justify-between items-start">

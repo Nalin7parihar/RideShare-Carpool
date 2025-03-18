@@ -11,7 +11,7 @@ const RideCard = () => {
   const dispatch = useDispatch();
   const handleSubmit = (e) => {
     e.preventDefault();
-    const searchParams = {from: pickup, to: destination, passengers: passengers};
+    const searchParams = {pickup: pickup, dropoff: destination, passengers: passengers};
     
     dispatch(fetchRides(searchParams))
       .unwrap()
@@ -26,7 +26,7 @@ const RideCard = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6 border border-gray-200">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form  onSubmit={handleSubmit} className="space-y-4">
         {/* Pickup Location */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">

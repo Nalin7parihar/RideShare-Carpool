@@ -1,6 +1,6 @@
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
-
+import { toast } from 'react-toastify';
 const googleAuth = new GoogleAuthProvider();
 
 const AuthService = {
@@ -10,18 +10,26 @@ const AuthService = {
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const token = credential?.accessToken;
 
+      toast.success('Login successful! Welcome !', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      }); 
       return {
         user: result.user,
         token: token
       }
     } catch (error) {
       const errorMessage = _formatAuthError(error);
+      toast.error('Login failed. Please check your credentials.');
       throw new Error(errorMessage);
     }
   },
 
   signUpwithEmail: async (email, password, displayName = "") => {
-    _validateEmailPassword(email, password);
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -30,10 +38,19 @@ const AuthService = {
         await updateProfile(result.user, { displayName });
 
       }
+      toast.success(' Successfully Registered!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
   
       return result.user;
     } catch (error) {
       const errorMessage = _formatAuthError(error);
+      toast.error('Login failed. Please check your credentials.');
       throw new Error(errorMessage);
     }
   },
@@ -45,10 +62,18 @@ const AuthService = {
 
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Login successful! Welcome back!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
 
       return result.user;
     } catch (error) {
-
+      toast.error('Login failed. Please check your credentials.');
       const errorMessage = _formatAuthError(error);
       throw new Error(errorMessage);
     }
