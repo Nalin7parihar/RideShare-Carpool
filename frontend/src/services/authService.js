@@ -1,6 +1,7 @@
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth";
+import { GoogleAuthProvider,signInWithPopup,signOut} from "firebase/auth";
 import { toast } from 'react-toastify';
+import axios from 'axios';
 const googleAuth = new GoogleAuthProvider();
 
 const AuthService = {
@@ -31,14 +32,17 @@ const AuthService = {
 
   signUpwithEmail: async (email, password, displayName = "") => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-
-  
-      if (displayName) {
-        await updateProfile(result.user, { displayName });
-
-      }
-      toast.success(' Successfully Registered!', {
+      // Call your backend API endpoint for registration using axios
+      const response = await axios.post('http://localhost:8080/api/users/', {
+        email, 
+        password, 
+        name : displayName
+      });
+      
+      // The response.data is already the user object based on your API
+      const user = response.data;
+      
+      toast.success('Successfully Registered!', {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -46,22 +50,29 @@ const AuthService = {
         pauseOnHover: true,
         draggable: true
       });
-  
-      return result.user;
+      
+      return user; // Return the user data directly
     } catch (error) {
-      const errorMessage = _formatAuthError(error);
-      toast.error('Login failed. Please check your credentials.');
+      // Axios error handling
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      toast.error('Registration failed. Please try again.');
       throw new Error(errorMessage);
     }
   },
   
-
   signInwithEmail: async (email, password) => {
-    console.log("⏳ Starting Firebase Sign-in Process...");
-    _validateEmailPassword(email, password);
-
+    console.log("⏳ Starting Sign-in Process...");
+    
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      // Call your backend API endpoint for login using axios
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email,
+        password
+      });
+      
+      // The response.data is already the user object
+      const user = response.data;
+      
       toast.success('Login successful! Welcome back!', {
         position: "top-right",
         autoClose: 3000,
@@ -70,15 +81,15 @@ const AuthService = {
         pauseOnHover: true,
         draggable: true
       });
-
-      return result.user;
+      
+      return user; // Return the user data directly
     } catch (error) {
+      // Better error handling with axios
+      const errorMessage = error.response?.data?.message || 'Login failed';
       toast.error('Login failed. Please check your credentials.');
-      const errorMessage = _formatAuthError(error);
       throw new Error(errorMessage);
     }
   },
-
   logout: async () => {
     try {
       await signOut(auth);
@@ -90,15 +101,7 @@ const AuthService = {
   getCurrentUser: () => auth.currentUser,
 };
 
-const _validateEmailPassword = (email, password) => {
-  if (!email || !email.trim() || !_isValidEmail(email)) {
-    throw new Error("Please provide a valid email address");
-  }
-  
-  if (!password || password.length < 6) {
-    throw new Error("Password must be at least 6 characters long");
-  }
-};
+
 
 const _formatAuthError = (error) => {
   const errorCode = error.code;
@@ -126,8 +129,5 @@ const _formatAuthError = (error) => {
   }
 };
 
-const _isValidEmail = (email) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
 
 export default AuthService;

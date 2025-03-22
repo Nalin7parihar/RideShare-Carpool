@@ -39,7 +39,7 @@ const Auth = () => {
   dispatch(signUpWithEmail({ 
     email: formData.email, 
     password: formData.password, 
-    fullname: formData.fullname 
+    fullname: formData.name 
   }));
         }
   };
