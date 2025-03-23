@@ -26,7 +26,7 @@ const handleUserSignUp = async (req, res) =>{
     })
     return res.status(201).json(user);
   } catch (error) {
-    
+    console.error("Signup error:", error);
   }
 }
 const handleUserLogin = async (req, res) => {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import { signInWithGoogle,signInWithEmail,signUpWithEmail} from '../Store/userSlice';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../Store/userSlice';
+import { driverSignInWithEmail,signUpDriverWithEmail } from '../Store/driverSlice';
 const Auth = () => {
-
-  const {loading}  = useSelector(state => state.user);
+  const {loading} = useSelector(state => state.user);
   const dispatch = useDispatch();
   const [userType, setUserType] = useState('customer');
   const [authMode, setAuthMode] = useState('login');
@@ -13,9 +13,10 @@ const Auth = () => {
     password: '',
     confirmPassword: '',
     name: '',
+    carNumber: '',
+    carModel: '',
+    driverLicense: null
   });
-
-
 
   const handleChange = (e) => {
     setFormData({
@@ -24,24 +25,82 @@ const Auth = () => {
     });
   };
   
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    setFormData({
+      ...formData,
+      driverLicense: e.target.files[0]
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate passwords match for signup
     if(authMode === 'signup' && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    if(authMode === 'login') {
-      dispatch(signInWithEmail({email : formData.email,password : formData.password}));
-      
-    }
-    else{
-      
-  dispatch(signUpWithEmail({ 
-    email: formData.email, 
-    password: formData.password, 
-    fullname: formData.name 
-  }));
+    
+    // Customer authentication
+    if(userType === 'customer') {
+      if(authMode === 'login') {
+        dispatch(signInWithEmail({
+          email: formData.email,
+          password: formData.password
+        }));
+      } else {
+        dispatch(signUpWithEmail({ 
+          email: formData.email, 
+          password: formData.password, 
+          fullname: formData.name 
+        }));
+      }
+    } 
+    // Driver authentication
+    else if(userType === 'driver') {
+      if(authMode === 'login') {
+        // You'll need to implement this action in your slice
+        dispatch(driverSignInWithEmail({
+          email: formData.email,
+          password: formData.password
+        }));
+      } else {
+        // For driver signup with license
+        if (!formData.driverLicense) {
+          alert("Driver license is required");
+          return;
         }
+        
+        try {
+          // Create FormData for the entire form including the file
+          const driverFormData = new FormData();
+          driverFormData.append('email', formData.email);
+          driverFormData.append('password', formData.password);
+          driverFormData.append('name', formData.name);
+          driverFormData.append('carNumber', formData.carNumber);
+          driverFormData.append('carModel', formData.carModel);
+          driverFormData.append('driverLicense', formData.driverLicense);
+          
+          for (let pair of driverFormData.entries()) {
+            console.log(pair[0], pair[1]);  // ✅ Logs key-value pairs properly
+          }
+                    // You'll need to implement this action in your slice
+          dispatch(signUpDriverWithEmail(driverFormData))
+            .unwrap()
+            .then(() => {
+              // Handle successful signup
+              console.log("Driver signup successful");
+            })
+            .catch(error => {
+              console.error("Error during driver signup:", error);
+              alert("Failed to complete driver registration");
+            });
+        } catch (error) {
+          console.error("Error during driver signup:", error);
+          alert("Failed to complete driver registration");
+        }
+      }
+    }
   };
   
   const handleGoogleAuth = () => {
@@ -49,7 +108,7 @@ const Auth = () => {
   };
   
   const toggleUserType = (type) => {
-    console.log(setUserType(type));
+    setUserType(type);
   };
   
   const toggleAuthMode = () => {
@@ -60,6 +119,9 @@ const Auth = () => {
       password: '',
       confirmPassword: '',
       name: '',
+      carNumber: '',
+      carModel: '',
+      driverLicense: null
     });
   };
   
@@ -125,7 +187,7 @@ const Auth = () => {
         </div>
         
         {/* Form */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType='multipart/form-data'>
           {/* Signup-only fields */}
           {authMode === 'signup' && (
             <>
@@ -182,26 +244,71 @@ const Auth = () => {
               />
             </div>
           )}
+          
           {/* Driver-specific fields for signup */}
-          {/* {userType === 'driver' && authMode === 'signup' && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-md">
-              <p className="text-sm text-gray-700 mb-2">
-                As a driver, you'll need to complete additional verification steps after signing up, including:
+          {userType === 'driver' && authMode === 'signup' && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-md shadow-sm">
+              <p className="text-sm text-gray-700 mb-3 font-medium">
+                Driver Verification
               </p>
-              <ul className="text-xs text-gray-600 list-disc pl-4">
-                <li>Vehicle registration</li>
-                <li>Driver's license verification</li>
-                <li>Background check</li>
-                <li>Profile photo</li>
-              </ul>
+              
+              {/* Car Number Input */}
+              <div className="mb-3">
+                <label className="block text-xs text-gray-600 mb-1" htmlFor="carNumber">
+                  Car Number
+                </label>
+                <input
+                  type="text"
+                  id="carNumber"
+                  name="carNumber"
+                  value={formData.carNumber}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-md text-sm focus:ring focus:ring-blue-300"
+                  placeholder="Enter your car number"
+                  required
+                />
+              </div>
+              
+              {/* Car Model */}
+              <div className="mb-3">
+                <label className="block text-xs text-gray-600 mb-1" htmlFor="carModel">
+                  Car Model
+                </label>
+                <input
+                  type="text"
+                  id="carModel"
+                  name="carModel"
+                  value={formData.carModel}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-md text-sm focus:ring focus:ring-blue-300"
+                  placeholder="Enter your car model"
+                  required
+                />
+              </div>
+
+              {/* License Upload */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-1" htmlFor="driverLicense">
+                  Upload Driver's License
+                </label>
+                <input
+                  type="file"
+                  id="driverLicense"
+                  name="driverLicense"
+                  onChange={handleFileChange}
+                  accept="image/*,application/pdf"
+                  className="w-full px-3 py-2 border rounded-md text-sm focus:ring focus:ring-blue-300"
+                  required
+                />
+              </div>
             </div>
-          )} */}
+          )}
           
           {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 mb-4"
-            disabled = {loading}
+            disabled={loading}
           >
             {authMode === 'login' ? (loading ? 'Logging In' : 'Login') : (loading ? 'Registering' : 'Sign Up')}
           </button>

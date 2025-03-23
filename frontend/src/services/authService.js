@@ -90,6 +90,47 @@ const AuthService = {
       throw new Error(errorMessage);
     }
   },
+  signUpDriverWithEmail : async (formData) =>{
+    try {
+      const response = await axios.post('http://localhost:8080/api/driver/', formData);
+      console.log('Driver registered:', response.data);
+      const driver = response.data;
+      toast.success('Successfully Registered!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      return driver;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      toast.error('Registration failed. Please try again.');
+      throw new Error(errorMessage);
+    }
+  },
+  driverSignInwithEmail : async (email,password) =>{
+    try {
+      const response = await axios.post('http://localhost:8080/api/driver/login', {
+        email,
+        password
+      });
+      const driver = response.data;
+      toast.success('Login successful! Welcome back!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      return driver;
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      toast.error('Login failed. Please check your credentials.');
+      throw new Error(errorMessage);
+  }},
   logout: async () => {
     try {
       await signOut(auth);
