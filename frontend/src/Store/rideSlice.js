@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
+import rideService from "../services/rideService";
 // Hardcoded ride data (to be replaced with API calls later)
 const initialRides = [
   {
@@ -79,6 +79,29 @@ export const fetchRides = createAsyncThunk("rides/fetchRides", async (searchPara
   });
 });
 
+export const offerRides = createAsyncThunk(
+  "rides/offerRides", 
+  async (rideDetails, { rejectWithValue }) => {
+      try {
+        console.log('Async Thunk',rideDetails);
+          const ride = await rideService.offerRide(rideDetails);
+          return ride;
+      } catch (error) {
+          // Handle potential errors from the ride service
+          const errorMessage = 
+              error.response?.data?.message || 
+              error.message || 
+              'Failed to offer ride';
+          
+          // Reject with a value that can be handled in the reducer
+          return rejectWithValue({
+              message: errorMessage,
+              status: error.response?.status
+          });
+      }
+  }
+);
+
 const rideSlice = createSlice({
   name: "rides",
   initialState: {
@@ -86,11 +109,7 @@ const rideSlice = createSlice({
     status: "idle",
     error: null,
   },
-  reducers: {
-    offerRide: (state, action) => {
-      state.rides.push({ id: state.rides.length + 1, ...action.payload });
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchRides.pending, (state) => {
@@ -103,9 +122,19 @@ const rideSlice = createSlice({
       .addCase(fetchRides.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
-      });
-  },
-});
+      })
+      .addCase(offerRides.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(offerRides.fulfilled, (state,action) =>{
+        state.status = "succeeded";
+        console.log('My action payload',action.payload);
+        state.rides.push(action.payload);
+      })
+      .addCase(offerRides.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload.message;
+    });
+  }});
 
-export const { offerRide } = rideSlice.actions;
 export default rideSlice.reducer;

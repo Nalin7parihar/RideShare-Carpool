@@ -33,8 +33,26 @@ const driverSchema = new mongoose.Schema({
   isVerified : {
     type : Boolean,
     default : false
+  },
+  rating : {
+    type : Number,
+    default : 0
+  },
+  totalRides : {
+    type : Number,
+    default : 0
+  },
+  availableSeats : {
+    type : Number,
+    default : 4
+  },
+  isAvailable : {
+    type : Boolean,
+    default : true
+  },
+  ridesOffered : [{type : mongoose.Schema.Types.ObjectId,ref : 'rides'}]
   }
-  }
+
 )
 
 const Driver = mongoose.model('Drivers', driverSchema);

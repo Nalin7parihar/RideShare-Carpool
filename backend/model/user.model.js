@@ -17,7 +17,11 @@ const customerSchema = new mongoose.Schema({
   },
   refreshToken : {
     type : String
-  }
+  },
+  bookedRides : [{
+    type : mongoose.Schema.Types.ObjectId,
+    ref : 'rides'
+  }],
   },
   {
     timestamps : true

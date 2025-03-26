@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { offerRide } from "../Store/rideSlice";
+import { offerRides } from "../Store/rideSlice";
 import { toast } from "react-toastify";
 
 const DriverDashboard = () => {
   const dispatch = useDispatch();
-  const driver = useSelector((state) => state.user.user);
+  const driver = useSelector((state) => state.driver.driver);
   const rides = useSelector((state) => state.rides.rides);
-  
   const [showModal, setShowModal] = useState(false);
   const [rideDetails, setRideDetails] = useState({
     from: "",
@@ -36,7 +35,7 @@ const DriverDashboard = () => {
   const handleOfferRide = () => {
     // More comprehensive validation
     const { from, to, time, seatsAvailable, price } = rideDetails;
-    
+    console.log(driver);
     // Trim and check for empty strings
     if (!from.trim() || !to.trim() || !time.trim()) {
       toast.error("Please fill in the location and time details.");
@@ -58,8 +57,7 @@ const DriverDashboard = () => {
     }
 
     const newRide = {
-      id: rides.length + 1,
-      driver: driver?.displayName || "Anonymous",
+      id: driver?.driver?._id,
       from: from.trim(),
       to: to.trim(),
       time: time.trim(),
@@ -67,8 +65,9 @@ const DriverDashboard = () => {
       price: ridePrice,
     };
 
+    console.log('New Ride :', newRide);
     try {
-      dispatch(offerRide(newRide));
+      dispatch(offerRides(newRide));
       toast.success("Ride offered successfully!");
       setShowModal(false);
       // Reset form after successful submission
@@ -81,25 +80,27 @@ const DriverDashboard = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Welcome, {driver?.displayName || "Driver"}!
+        Welcome, {driver?.driver?.name || "Driver"}!
       </h2>
 
       <div className="mb-6">
         <h3 className="text-lg font-medium mb-3">Your Rides:</h3>
-        {rides.length > 0 ? (
+        {
+        rides?.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-4">
-            {rides.map((ride) => (
+            {rides.map((ride) => 
+            (
               <div 
-                key={ride.id} 
+                key={ride.ride.id} 
                 className="border p-4 rounded-lg bg-gray-100 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-blue-600">{ride.from} → {ride.to}</span>
-                  <span className="text-sm text-gray-600">@{ride.time}</span>
+                  <span className="font-bold text-blue-600">{ride.ride.from} → {ride.ride.to}</span>
+                  <span className="text-sm text-gray-600">@{ride.ride.time}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Seats: {ride.seatsAvailable}</span>
-                  <span className="font-semibold text-green-600">₹{ride.price}</span>
+                  <span>Seats: {ride.ride.seatsAvailable}</span>
+                  <span className="font-semibold text-green-600">₹{ride.ride.price}</span>
                 </div>
               </div>
             ))}

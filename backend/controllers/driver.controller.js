@@ -2,6 +2,7 @@ import Driver from "../model/driver.model.js";
 import bcrypt from "bcryptjs";
 import { generateAcessToken,generateRefreshToken } from "./user.controller.js";
 import { v2 as cloudinary } from 'cloudinary';
+
 const handleDriverSignUp = async (req, res) => {
   try {
     const { name, email, password, carNumber, carModel } = req.body;
@@ -203,6 +204,10 @@ const handleDriverLogin = async (req, res) => {
     });
   }
 };
+
+
+
+
 
 
 export {handleDriverLogin,handleDriverSignUp};

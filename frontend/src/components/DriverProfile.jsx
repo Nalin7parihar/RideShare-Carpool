@@ -113,9 +113,7 @@ const DriverProfile = () => {
               </div>
             </div>
 
-            {/* Upcoming Rides */}
-           
-
+    
             {/* Reviews */}
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-3">Recent Reviews</h3>
