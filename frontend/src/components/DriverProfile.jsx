@@ -3,7 +3,7 @@ import { Calendar, MapPin, Phone, Mail, Star, Clock, Car, Shield} from 'lucide-r
 const DriverProfile = () => {
   const driver = {
     name: "Alex Johnson",
-    avatar: "/api/placeholder/150/150",
+    avatar: "/driver.png",
     rating: 4.8,
     totalRides: 142,
     location: "San Francisco, CA",
@@ -114,31 +114,7 @@ const DriverProfile = () => {
             </div>
 
             {/* Upcoming Rides */}
-            <div className="p-6 border-b">
-              <h3 className="text-lg font-semibold mb-3">Upcoming Rides</h3>
-              {driver.upcomingRides.length > 0 ? (
-                <div className="space-y-3">
-                  {driver.upcomingRides.map(ride => (
-                    <div key={ride.id} className="flex items-center p-3 bg-blue-50 rounded-md">
-                      <Calendar className="w-5 h-5 text-blue-500" />
-                      <div className="ml-3 flex-grow">
-                        <div className="font-medium">{ride.date}</div>
-                        <div className="text-sm flex items-center">
-                          <Clock className="w-4 h-4 text-gray-500 mr-1" />
-                          {ride.time}
-                        </div>
-                        <div className="text-sm text-gray-600">{ride.from} → {ride.to}</div>
-                      </div>
-                      <div className="text-sm bg-blue-100 px-2 py-1 rounded">
-                        {ride.passengers} passenger{ride.passengers !== 1 ? 's' : ''}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No upcoming rides</p>
-              )}
-            </div>
+           
 
             {/* Reviews */}
             <div className="p-6">

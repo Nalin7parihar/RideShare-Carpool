@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import Customer from "../model/user.model.js";
 import { generateAcessToken,generateRefreshToken } from "../controllers/user.controller.js";
+
+
 const verifyAcessToken = async (req,res,next) =>{
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];

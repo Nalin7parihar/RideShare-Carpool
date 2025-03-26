@@ -4,7 +4,7 @@ import { Calendar, MapPin, Phone, Mail, Star, Clock, Car, User, Shield, CreditCa
 const CustomerProfile = () => {
   const customer = { 
     name: "Taylor Smith",
-    avatar: "/api/placeholder/150/150",
+    avatar: "/customer.png",
     rating: 4.9,
     totalRides: 87,
     location: "Oakland, CA",
@@ -110,4 +110,4 @@ const CustomerProfile = () => {
   )
 };
 
-export default CustomerProfile
+export default CustomerProfile;

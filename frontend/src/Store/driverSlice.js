@@ -43,7 +43,7 @@ export const driverSignInWithEmail = createAsyncThunk(
   }
 );
 
-export const logoutUser = createAsyncThunk("driver/logoutUser", async () => {
+export const logoutDriver = createAsyncThunk("driver/logoutDriver", async () => {
   await AuthService.logout();
   return null;
 });
@@ -92,7 +92,7 @@ const driverSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(logoutUser.fulfilled, (state, action) => {
+      .addCase(logoutDriver.fulfilled, (state, action) => {
         state.driver = action.payload;
         localStorage.removeItem("driver"); // ✅ Remove from localStorage on logout
       });
