@@ -65,26 +65,24 @@ const initialRides = [
 ];
 
 export const fetchRides = createAsyncThunk("rides/fetchRides", async (searchParams) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const filteredRides = initialRides.filter((ride) => 
-        (!searchParams.pickup || ride.pickup.toLowerCase().includes(searchParams.pickup.toLowerCase())) &&
-        (!searchParams.dropoff || ride.dropoff.toLowerCase().includes(searchParams.dropoff.toLowerCase())) &&
-        (!searchParams.passengers || ride.seatsAvailable >= searchParams.passengers)
-      );
-
-      console.log("Filtered Rides:", filteredRides); // Ensure this logs before resolving
-      resolve(filteredRides);
-    }, 500);
+      try {
+        console.log("My search Params",searchParams);
+        const fetchedRide = await rideService.fetchRides(searchParams);
+        return fetchedRide;
+      } catch (error) {
+        error.response?.data?.message || error?.message || "Failed to fetch Rides"
+      } 
   });
-});
+
 
 export const offerRides = createAsyncThunk(
   "rides/offerRides", 
   async (rideDetails, { rejectWithValue }) => {
       try {
-        console.log('Async Thunk',rideDetails);
           const ride = await rideService.offerRide(rideDetails);
+          const storedRides = JSON.parse(localStorage.getItem("rides")) || [];
+      storedRides.push(ride);
+      localStorage.setItem("rides", JSON.stringify(storedRides));
           return ride;
       } catch (error) {
           // Handle potential errors from the ride service
@@ -108,8 +106,13 @@ const rideSlice = createSlice({
     rides: [],
     status: "idle",
     error: null,
+    rideStatus : "active"
   },
-  reducers: {},
+  reducers: {
+    setRides : (state,action) =>{
+      state.rides = action.payload;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchRides.pending, (state) => {
@@ -128,7 +131,6 @@ const rideSlice = createSlice({
       })
       .addCase(offerRides.fulfilled, (state,action) =>{
         state.status = "succeeded";
-        console.log('My action payload',action.payload);
         state.rides.push(action.payload);
       })
       .addCase(offerRides.rejected, (state, action) => {

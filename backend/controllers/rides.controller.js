@@ -3,7 +3,7 @@ import Driver from "../model/driver.model.js";
 
 const offerRide = async (req, res) => {
   try {
-    const { from, to, time, price, seatsAvailable, id } = req.body;
+    const { from, to, time,date, price, seatsAvailable, id } = req.body;
     
     // Input validation
     if (!from || !to || !time || !price || !seatsAvailable || !id) {
@@ -26,6 +26,7 @@ const offerRide = async (req, res) => {
       from,
       to,
       time,
+      date,
       price,
       seatsAvailable,
       driver : id
@@ -50,4 +51,36 @@ const offerRide = async (req, res) => {
   }
 };
 
-export {offerRide};
+const fetchRide = async (req,res) =>{
+  const from = req.body.pickup;
+  const to = req.body.dropoff;
+  const seatsAvailable = req.body.passengers;
+  const {date} = req.body;
+
+  if(!from || !to || !seatsAvailable || !date){
+    return res.status(400).json({ 
+      message: 'Missing required ride details' 
+    });
+  }
+  try {
+    const query = {
+      ...(from && {from : {$regex : new RegExp(from,"i")}}),
+      ...(to && {to : {$regex : new RegExp(to,"i")}}),
+      ...(seatsAvailable && {seatsAvailable : {$gte : Number(seatsAvailable)}})
+    };
+    
+    let fetchedRides = await Rides.find(query).populate('driver');
+
+    fetchedRides = fetchedRides.map(ride => ({
+      ...ride.toObject(),  // Convert Mongoose document to plain object
+      price: ride.price * Number(seatsAvailable || 1) // Multiply price by requested passengers
+    }));
+    console.log(fetchedRides);
+
+    res.json(fetchedRides);
+    
+  }catch (error) {
+    res.status(500).json({success : false,error : error.message});
+  }
+}
+export {offerRide,fetchRide};

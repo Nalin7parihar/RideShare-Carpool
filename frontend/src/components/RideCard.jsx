@@ -5,28 +5,37 @@ import { useNavigate } from "react-router-dom";
 const RideCard = () => {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  const today = new Date().toLocaleDateString(); // Format today's date
+  const [date, setDate] = useState(""); // Format today's date
   const [passengers, setPassengers] = useState(1);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleSubmit = (e) => {
     e.preventDefault();
-    const searchParams = {pickup: pickup, dropoff: destination, passengers: passengers};
-    
+    const searchParams = {
+      pickup: pickup,
+      dropoff: destination,
+      passengers: passengers,
+      date: date,
+    };
+
     dispatch(fetchRides(searchParams))
       .unwrap()
       .then(() => {
         // Create URL with search parameters
-        navigate(`/bookRide?from=${encodeURIComponent(pickup)}&to=${encodeURIComponent(destination)}&passengers=${passengers}`);
+        navigate(
+          `/bookRide?from=${encodeURIComponent(pickup)}&to=${encodeURIComponent(
+            destination
+          )}&passengers=${passengers}`
+        );
       })
       .catch((error) => {
-        console.error('Failed to fetch rides:', error);
+        console.error("Failed to fetch rides:", error);
       });
   };
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6 border border-gray-200">
-      <form  onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Pickup Location */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">
@@ -62,7 +71,11 @@ const RideCard = () => {
           <label className="text-lg font-semibold text-gray-700 block mb-2">
             Date of Travel:
           </label>
-          <input  type = 'date' className="border border-gray-300 p-3 rounded-md shadow-sm w-full bg-gray-50 text-gray-800 font-medium"/>
+          <input
+            type="date"
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-gray-300 p-3 rounded-md shadow-sm w-full bg-gray-50 text-gray-800 font-medium"
+          />
         </div>
 
         {/* Number of Passengers */}
@@ -79,7 +92,6 @@ const RideCard = () => {
             <option value="2">2 Passengers</option>
             <option value="3">3 Passengers</option>
             <option value="4">4 Passengers</option>
-            <option value="5">5+ Passengers</option>
           </select>
         </div>
 

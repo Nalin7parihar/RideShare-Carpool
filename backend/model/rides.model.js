@@ -14,6 +14,10 @@ const RideSchema = new mongoose.Schema({
     type : String,
     required : true
   },
+  date : {
+    type : String,
+    required : true
+  },
   price : {
     type : Number,
     required : true
@@ -25,12 +29,12 @@ const RideSchema = new mongoose.Schema({
   },
   driver : {
     type : mongoose.Schema.Types.ObjectId,
-    ref : 'drivers',
+    ref : 'Drivers',
     required : true
   },
   passengers : [{
     type : mongoose.Schema.Types.ObjectId,
-    ref : 'customers',
+    ref : 'Customers',
   }]
 })
 

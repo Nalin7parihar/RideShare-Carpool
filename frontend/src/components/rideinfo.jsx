@@ -16,12 +16,12 @@ const Rideinfo = ({rides}) => {
   return (
     <>
     {rides.map((ride) => (
-      <div key={ride.id} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+      <div key={ride._id} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
         <div className="flex flex-col md:flex-row">
           {/* Driver Profile Section */}
           <div className="md:w-1/4 flex flex-col items-center mb-4 md:mb-0">
             <img 
-              src={ride.driver.profilePic} 
+              src='/driver.png' 
               alt={`${ride.driver.name}'s profile`} 
               className="w-16 h-16 rounded-full object-cover mb-2"
             />
@@ -37,8 +37,8 @@ const Rideinfo = ({rides}) => {
             <div className="flex items-start mb-2">
               <MapPin size={18} className="text-blue-500 mr-2 mt-1 flex-shrink-0" />
               <div>
-                <div className="font-medium">From: {ride.pickup}</div>
-                <div className="font-medium">To: {ride.dropoff}</div>
+                <div className="font-medium">From: {ride.from}</div>
+                <div className="font-medium">To: {ride.to}</div>
               </div>
             </div>
             
@@ -49,19 +49,19 @@ const Rideinfo = ({rides}) => {
             
             <div className="flex items-center mb-2">
               <Clock size={18} className="text-blue-500 mr-2 flex-shrink-0" />
-              <span>{ride.time} • {ride.estimatedTravelTime}</span>
+              <span>{ride.time} • 15m</span>
             </div>
             
             <div className="flex items-center mb-2">
               <Car size={18} className="text-blue-500 mr-2 flex-shrink-0" />
-              <span>{ride.vehicle.model} • {ride.vehicle.licensePlate}</span>
+              <span>{ride.driver.carModel} • {ride.driver.carNumber}</span>
             </div>
           </div>
           
           {/* Price and Booking Section */}
           <div className="md:w-1/4 flex flex-col items-center justify-between">
             <div className="text-center">
-              <div className="font-bold text-xl text-green-600">${ride.pricePerSeat.toFixed(2)}</div>
+              <div className="font-bold text-xl text-green-600">${ride.price.toFixed(2)}</div>
               <div className="text-sm text-gray-500">per seat</div>
             </div>
             
@@ -72,14 +72,14 @@ const Rideinfo = ({rides}) => {
             
             <div className="flex flex-col space-y-2 w-full">
               <button 
-                onClick={() => handleViewDetails(ride.id)} 
+                onClick={() => handleViewDetails(ride._id)} 
                 className="flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors"
               >
                 <Info size={16} className="mr-2" />
                 View Details
               </button>
               <button 
-                onClick={() => handleBookRide(ride.id)} 
+                onClick={() => handleBookRide(ride._id)} 
                 className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 <CreditCard size={16} className="mr-2" />

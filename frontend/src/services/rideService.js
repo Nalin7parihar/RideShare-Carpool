@@ -6,7 +6,6 @@ const RideService = {
     try {
         // Create FormData object
         
-        console.log('Form Data:', rideDetails);
         // Append all ride details to FormData
         // Make API call with form data
         const response = await axios.post('http://localhost:8080/api/rides/offerRide', rideDetails, {
@@ -32,7 +31,12 @@ const RideService = {
             throw error;
         }
     }
-}
+    },
+    fetchRides : async (rideParams) =>{
+        const response = await axios.post('http://localhost:8080/api/rides/fetchRide',rideParams);
+        console.log("Response : ",response.data);
+        return response.data;
+    }
 };
 
 export default RideService;
