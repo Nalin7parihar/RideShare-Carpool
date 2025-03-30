@@ -29,7 +29,8 @@ const offerRide = async (req, res) => {
       date,
       price,
       seatsAvailable,
-      driver : id
+      driver : id,
+      status : "active"
     });
     
     // Update driver's rides offered
@@ -64,9 +65,10 @@ const fetchRide = async (req,res) =>{
   }
   try {
     const query = {
-      ...(from && {from : {$regex : new RegExp(from,"i")}}),
-      ...(to && {to : {$regex : new RegExp(to,"i")}}),
-      ...(seatsAvailable && {seatsAvailable : {$gte : Number(seatsAvailable)}})
+      ...(from && {from: {$regex: new RegExp(from, "i")}}),
+      ...(to && {to: {$regex: new RegExp(to, "i")}}),
+      ...(seatsAvailable && {seatsAvailable: {$gte: Number(seatsAvailable)}}),
+      status: "active"  // Add this condition to only match active rides
     };
     
     let fetchedRides = await Rides.find(query).populate('driver');
@@ -75,7 +77,6 @@ const fetchRide = async (req,res) =>{
       ...ride.toObject(),  // Convert Mongoose document to plain object
       price: ride.price * Number(seatsAvailable || 1) // Multiply price by requested passengers
     }));
-    console.log(fetchedRides);
 
     res.json(fetchedRides);
     
@@ -83,4 +84,44 @@ const fetchRide = async (req,res) =>{
     res.status(500).json({success : false,error : error.message});
   }
 }
-export {offerRide,fetchRide};
+
+const completeRide = async (req,res) =>{
+    const {id} = req.params;
+    
+    const updatedRide = await Rides.findByIdAndUpdate(id,{status : "completed"},{
+      new : true,
+      runValidators : true
+    })
+    
+    if(!updatedRide){
+      return res.status(404).json({ success: false, message: "Ride not found" });
+    }
+
+    res.json(updatedRide);
+}
+
+const deleteRide = async (req,res) =>{
+  const {id} = req.params;
+
+  const deletedRide = await Rides.findByIdAndDelete(id);
+
+  if(!deletedRide) return res.status(404).json({success : false,message : "Ride not found"});
+
+  res.json(deletedRide);
+}
+
+const updatedRide = async (req,res) => {
+  const {id} = req.params;
+
+  const updates = req.body;
+  const updatedRide = await Rides.findByIdAndUpdate(id,updates,{new : true,runValidators : true});
+  
+  if(!updatedRide){
+    return res.status(404).json({ success: false, message: "Ride not found" });
+  }
+
+  res.json(updatedRide);
+}
+
+
+export {offerRide,fetchRide,completeRide,deleteRide,updatedRide};

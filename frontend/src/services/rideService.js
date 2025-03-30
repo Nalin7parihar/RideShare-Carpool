@@ -36,7 +36,41 @@ const RideService = {
         const response = await axios.post('http://localhost:8080/api/rides/fetchRide',rideParams);
         console.log("Response : ",response.data);
         return response.data;
-    }
+    },
+    updateRide: async (rideData) => {
+        console.log("the acquired data :",rideData);
+        try {
+          const response = await axios.patch(`http://localhost:8080/api/rides/updateRide/${rideData.id}`, rideData,{
+            headers : {
+                "Content-Type" : "application/json"
+            }
+          });
+          console.log(response.data);
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      },
+      
+      // Complete a ride
+      completeRide: async (rideId) => {
+        try {
+          const response = await axios.patch(`http://localhost:8080/api/rides/completeRide/${rideId}`);
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      },
+      
+      // Delete a ride
+      deleteRide: async (rideId) => {
+        try {
+          await axios.delete(`http://localhost:8080/api/rides/deleteRide/${rideId}`);
+          return rideId; // Return the ID to be used in the Redux state update
+        } catch (error) {
+          throw error;
+        }
+      }
 };
 
 export default RideService;

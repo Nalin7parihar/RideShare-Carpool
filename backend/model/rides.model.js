@@ -35,7 +35,11 @@ const RideSchema = new mongoose.Schema({
   passengers : [{
     type : mongoose.Schema.Types.ObjectId,
     ref : 'Customers',
-  }]
+  }],
+  status : {
+    type : String,
+    default : "active"
+  }
 })
 
 const  Rides = mongoose.model('Rides',RideSchema);
