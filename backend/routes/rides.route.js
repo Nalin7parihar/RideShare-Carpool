@@ -11,6 +11,4 @@ ridesRoute.patch('/completeRide/:id',completeRide);
 ridesRoute.delete('/deleteRide/:id',deleteRide);
 ridesRoute.patch('/updateRide/:id',updatedRide);
 
-
-
 export default ridesRoute;

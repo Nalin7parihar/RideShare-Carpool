@@ -19,8 +19,12 @@ const customerSchema = new mongoose.Schema({
     type : String
   },
   bookedRides : [{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : 'rides'
+    rideId : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : 'rides'
+    },
+    seatsBooked : {type : Number, required : function ()  {return this.rideId !== undefined}},
+    status : {type :String, enum : ["Pending","Confirmed","Cancelled"],default :"Pending" }
   }],
   },
   {

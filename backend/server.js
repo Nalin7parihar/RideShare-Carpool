@@ -5,6 +5,7 @@ import connectCloudinary from './config/cloudinary.js';
 import userRoute from './routes/user.route.js';
 import driverRoute from './routes/driver.route.js';
 import ridesRoute from './routes/rides.route.js';
+import bookingRoute from './routes/booking.route.js';
 import cors from 'cors';
 const app = express();
 
@@ -23,7 +24,7 @@ app.get('/',(req,res) =>{
 app.use('/api/users',userRoute);
 app.use('/api/driver',driverRoute);
 app.use('/api/rides',ridesRoute);
-
+app.use('/api/bookings',bookingRoute);
 app.listen(port, () => {
   console.log(`Server launched on port ${port}`);
 });

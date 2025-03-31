@@ -92,7 +92,9 @@ const completeRide = async (req,res) =>{
       new : true,
       runValidators : true
     })
-    
+
+    const driver = await Rides.findById(id).populate('driver');
+    driver.totalRides += 1;
     if(!updatedRide){
       return res.status(404).json({ success: false, message: "Ride not found" });
     }
