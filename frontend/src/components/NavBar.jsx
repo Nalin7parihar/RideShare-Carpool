@@ -53,7 +53,7 @@ const Navbar = ({ scrollToForm }) => {
           {user && <p onClick={scrollToForm} className="cursor-pointer hover:text-gray-300">Book a Ride</p>}
           
 
-          <Link to="/my-rides" className="hover:text-gray-300">My Rides</Link>
+          <Link to={user ? "/user-rides" : "/my-rides"} className="hover:text-gray-300">My Rides</Link>
           <Link to="/payments" className="hover:text-gray-300">Payments</Link>
           <button onClick={() => setIsOpen(true)} className="hover:text-gray-300">About Us</button>
         </div>

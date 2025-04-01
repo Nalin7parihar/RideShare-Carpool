@@ -1,46 +1,63 @@
 import mongoose from "mongoose";
 
-
 const RideSchema = new mongoose.Schema({
-  from : {
-    type : String,
-    required : true
+  from: {
+    type: String,
+    required: true,
   },
-  to : {
-    type : String,
-    required : true
+  to: {
+    type: String,
+    required: true,
   },
-  time : {
-    type : String,
-    required : true
+  fromCoordinates: {
+    type: [Number], // [longitude, latitude]
+    default: null,
   },
-  date : {
-    type : String,
-    required : true
+  toCoordinates: {
+    type: [Number], // [longitude, latitude]
+    default: null,
   },
-  price : {
-    type : Number,
-    required : true
+  distance: {
+    type: Number, // in kilometers
+    default: null,
   },
-  seatsAvailable : {
-    type : Number,
-    required : true,
-    default : 4
+  estimatedDuration: {
+    type: Number, // in minutes
+    default: null,
   },
-  driver : {
-    type : mongoose.Schema.Types.ObjectId,
-    ref : 'Drivers',
-    required : true
+  time: {
+    type: String,
+    required: true,
   },
-  passengers : [{
-    type : mongoose.Schema.Types.ObjectId,
-    ref : 'Customers',
-  }],
-  status : {
-    type : String,
-    default : "active"
-  }
-})
+  date: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  seatsAvailable: {
+    type: Number,
+    required: true,
+    default: 4,
+  },
+  driver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Drivers",
+    required: true,
+  },
+  passengers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customers",
+    },
+  ],
+  status: {
+    type: String,
+    default: "active",
+  },
+});
 
-const  Rides = mongoose.model('Rides',RideSchema);
+const Rides = mongoose.model("Rides", RideSchema);
 export default Rides;

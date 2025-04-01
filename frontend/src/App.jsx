@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 // Page Imports
 import Home from './pages/Home'
 import Navbar from './components/NavBar';
-import Footer from './components/Footer';
 import MyRides from './pages/MyRides';
 import CustomerProfile from './components/CustomerProfile';
 import DriverProfile from './components/DriverProfile';
@@ -17,6 +16,8 @@ import PaymentsPage from './pages/PaymentPage';
 import FindRides from './pages/FindRides';
 import NotFoundPage from './pages/Page404';
 import DriverDashboard from './pages/DriverDashBoard';
+import BookingForm from './components/BookingForm';
+import UserRides from './pages/UserRides';
 
 const App = () => {
   const { user } = useSelector(state => state.user);
@@ -90,6 +91,14 @@ const App = () => {
             <DriverDashboard />
           </ProtectedRoute>
         }/>
+
+        <Route path='/booking/:rideId' element={
+          <ProtectedRoute>
+            <BookingForm />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="/user-rides" element={<UserRides />} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

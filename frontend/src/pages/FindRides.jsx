@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import Rideinfo from '../components/rideinfo';
 const FindRides = () => {
-  // Sample data - in a real app this would come from an API call
+  
   
   const rides = useSelector((state) => state.rides.rides);
-  // This would be set based on actual search results
   const [hasResults, setHasResults] = useState(true);
 
   

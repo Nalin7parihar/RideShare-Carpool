@@ -1,6 +1,9 @@
 import React from "react";
 
 const ActiveRideCard = ({ currentRide, onUpdate, onComplete, onDelete }) => {
+  // Add null check and fallback for ride data
+  const ride = currentRide?.ride || {};
+  
   return (
     <div className="border rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 shadow-lg mb-6 overflow-hidden">
       <div className="bg-amber-500 px-4 py-2">
@@ -27,7 +30,7 @@ const ActiveRideCard = ({ currentRide, onUpdate, onComplete, onDelete }) => {
           </div>
           <div>
             <p className="text-blue-700 font-bold text-xl">
-              {currentRide?.ride?.from} → {currentRide?.ride?.to}
+              {ride.from || 'N/A'} → {ride.to || 'N/A'}
             </p>
           </div>
         </div>
@@ -36,19 +39,19 @@ const ActiveRideCard = ({ currentRide, onUpdate, onComplete, onDelete }) => {
           <div className="bg-white p-3 rounded-lg shadow-sm">
             <p className="text-gray-500 text-sm">Date</p>
             <p className="text-gray-800 font-medium">
-              {currentRide?.ride?.date}
+              {ride.date || 'N/A'}
             </p>
           </div>
           <div className="bg-white p-3 rounded-lg shadow-sm">
             <p className="text-gray-500 text-sm">Time</p>
             <p className="text-gray-800 font-medium">
-              {currentRide?.ride?.time}
+              {ride.time || 'N/A'}
             </p>
           </div>
           <div className="bg-white p-3 rounded-lg shadow-sm">
             <p className="text-gray-500 text-sm">Price</p>
             <p className="text-green-600 font-bold">
-              ₹{currentRide?.ride?.price}
+              ₹{ride.price || '0'}
             </p>
           </div>
           <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -69,7 +72,7 @@ const ActiveRideCard = ({ currentRide, onUpdate, onComplete, onDelete }) => {
                 />
               </svg>
               <p className="text-blue-600 font-bold">
-                {currentRide?.ride?.seatsAvailable || 0}
+                {ride.seatsAvailable || 0}
               </p>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import ActiveRideCard from "../components/ActiveRide";
 import NoRideCard from "../components/NoRideCard";
 import RideModal from "../components/RideModal";
+import AuthService from "../services/authService";
 
 const initialRideState = {
   from: "",
@@ -18,6 +19,8 @@ const initialRideState = {
   date: "",
   seatsAvailable: "",
   price: "",
+  fromCoordinates: null,
+  toCoordinates: null,
 };
 
 const DriverDashboard = () => {
@@ -25,49 +28,79 @@ const DriverDashboard = () => {
   const driver = useSelector((state) => state.driver.driver);
   // Force re-render on rides state changes
   const rides = useSelector((state) => state.rides.rides);
-  // Update filtering logic to get the most recent active ride
-  const activeRides = rides.filter((ride) => ride?.ride?.status === "active");
-
-  // Add key to force re-render
+  
+  // Update filtering logic to properly get active rides from both sources
   const [updateKey, setUpdateKey] = useState(0);
-
-  // Always get the most recent active ride
-  const currentRide =
-    activeRides.length > 0 ? activeRides[activeRides.length - 1] : null;
-
+  // State for driver's ride history
+  const [driverRides, setDriverRides] = useState([]);
+  
+  // Improved active ride detection - check both Redux store and local driverRides
+  const activeRidesFromStore = rides.filter(ride => ride?.ride?.status === "active");
+  const activeRidesFromHistory = driverRides.filter(ride => ride.status === "active");
+  
+  // Combine active rides from both sources, prioritizing store data
+  const activeRides = activeRidesFromStore.length > 0 
+    ? activeRidesFromStore 
+    : activeRidesFromHistory.map(ride => ({ ride }));
+  
+  // Get the most recent active ride
+  const currentRide = activeRides.length > 0 ? activeRides[0] : null;
   const hasActiveRide = !!currentRide;
 
   const [showModal, setShowModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [rideDetails, setRideDetails] = useState(initialRideState);
 
-  // Listen for ride updates to force re-render
+  // Fetch driver rides on component mount and when rides change
   useEffect(() => {
-    // Increment key to force component re-render when rides change
-    setUpdateKey((prev) => prev + 1);
-  }, [rides]);
+    const fetchDriverRides = async () => {
+      if (driver?.driver?._id) {
+        try {
+          const rides = await AuthService.getDriverRides(driver.driver._id);
+          setDriverRides(rides);
+          
+          // Store in localStorage
+          localStorage.setItem('rides', JSON.stringify(rides));
+          
+          // Force UI update when rides are fetched
+          setUpdateKey(prev => prev + 1);
+        } catch (error) {
+          console.error("Failed to fetch driver rides:", error);
+        }
+      }
+    };
 
-  useEffect(() => {
-    const storedRides = localStorage.getItem("rides");
-    if (storedRides) {
-      dispatch({ type: "rides/setRides", payload: JSON.parse(storedRides) });
+    // Check if user is a driver before fetching
+    if (driver) {
+      fetchDriverRides();
     }
-  }, [dispatch]); // Only run on mount
+  }, [driver, rides]);
 
-  // Second useEffect to update localStorage when rides state changes
+  // Load driver rides from localStorage on initial load
   useEffect(() => {
-    // Save to localStorage whenever rides state updates
-    if (rides.length > 0) {
-      localStorage.setItem("rides", JSON.stringify(rides));
+    if (driver) {
+      const storedRides = localStorage.getItem('rides');
+      if (storedRides) {
+        setDriverRides(JSON.parse(storedRides));
+      }
     }
-  }, [rides]);
+  }, [driver]);
 
+  // Force refresh active rides when component mounts or driver changes
+  useEffect(() => {
+    if (driver?.driver?._id) {
+      // Dispatch an action to refresh rides from the server
+      dispatch({ type: 'driver/fetchDriverRides' });
+      
+      // Increment key to force component re-render
+      setUpdateKey(prev => prev + 1);
+    }
+  }, [driver, dispatch]);
+
+  // Modified handleInputChange to not reset coordinates (will be handled by RideCard)
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setRideDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setRideDetails((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const resetForm = useCallback(() => {
@@ -76,6 +109,7 @@ const DriverDashboard = () => {
     setRideDetails(initialRideState);
   }, []);
 
+  // Modified handleUpdateRide to include coordinates if available
   const handleUpdateRide = useCallback(() => {
     if (currentRide?.ride?._id) {
       // Pre-fill form with current ride details
@@ -86,12 +120,15 @@ const DriverDashboard = () => {
         date: currentRide.ride.date || "",
         seatsAvailable: currentRide.ride.seatsAvailable || "",
         price: currentRide.ride.price || "",
+        fromCoordinates: currentRide.ride.fromCoordinates || null,
+        toCoordinates: currentRide.ride.toCoordinates || null,
       });
       setIsUpdating(true);
       setShowModal(true);
     }
   }, [currentRide]);
 
+  // Modified validateRideDetails to not include geocoding
   const validateRideDetails = useCallback(() => {
     const { from, to, time, date, seatsAvailable, price } = rideDetails;
 
@@ -116,53 +153,40 @@ const DriverDashboard = () => {
     return true;
   }, [rideDetails]);
 
+  // Modified handleOfferRide to not handle geocoding
   const handleOfferRide = useCallback(() => {
     // Check if user already has an active ride when offering a new one
     if (!isUpdating && hasActiveRide) {
       toast.error("You already have an active ride.");
       return;
     }
-
-    if (!validateRideDetails()) {
-      return;
-    }
-
-    const { from, to, time, date, seatsAvailable, price } = rideDetails;
-
-    const newRide = {
-      id: isUpdating ? currentRide?.ride?._id : driver?.driver?._id,
-      from: from.trim(),
-      to: to.trim(),
-      time: time.trim(),
-      date: date.trim(),
-      seatsAvailable: parseInt(seatsAvailable),
-      price: parseFloat(price),
-    };
-
+    
     try {
+      const isValid = validateRideDetails();
+      if (!isValid) return;
+
+      const { from, to, time, date, seatsAvailable, price } = rideDetails;
+
+      const newRide = {
+        id: isUpdating ? currentRide?.ride?._id : driver?.driver?._id,
+        from: from.trim(),
+        to: to.trim(),
+        time: time.trim(),
+        date: date.trim(),
+        seatsAvailable: parseInt(seatsAvailable),
+        price: parseFloat(price)
+        // Coordinates will be added by RideCard component
+      };
+
       if (isUpdating) {
-        // Wait for the update to complete before resetting form
-        dispatch(updateRide(newRide))
-          .then(() => {
-            // Force a re-render to show updated ride details
-            setUpdateKey((prev) => prev + 1);
-            toast.success("Ride updated successfully!");
-            resetForm();
-          })
-          .catch((error) => {
-            console.error("Error updating ride:", error);
-            toast.error("Failed to update ride. Please try again.");
-          });
+        dispatch(updateRide(newRide));
+        setUpdateKey((prev) => prev + 1);
+        toast.success("Ride updated successfully!");
+        resetForm();
       } else {
-        dispatch(offerRides(newRide))
-          .then(() => {
-            toast.success("Ride offered successfully!");
-            resetForm();
-          })
-          .catch((error) => {
-            console.error("Error offering ride:", error);
-            toast.error("Failed to offer ride. Please try again.");
-          });
+        dispatch(offerRides(newRide));
+        toast.success("Ride offered successfully!");
+        resetForm();
       }
     } catch (error) {
       console.error("Error handling ride:", error);
@@ -222,13 +246,39 @@ const DriverDashboard = () => {
         )}
       </div>
 
+      {/* Driver Ride History Section */}
+      {driverRides.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Ride History</h3>
+          <div className="space-y-4">
+            {driverRides.map((ride) => (
+              <div key={ride._id} className="p-4 border rounded-lg shadow-sm">
+                <div className="flex justify-between">
+                  <div>
+                    <p className="font-medium">{ride.from} → {ride.to}</p>
+                    <p className="text-sm text-gray-600">Date: {ride.date} at {ride.time}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-green-600">₹{ride.price}</p>
+                    <p className="text-sm text-gray-600">Status: <span className={`font-medium ${
+                      ride.status === 'completed' ? 'text-green-600' : 
+                      ride.status === 'active' ? 'text-blue-600' : 'text-gray-600'
+                    }`}>{ride.status}</span></p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Offer Ride Button */}
       <button
         onClick={() => {
           setIsUpdating(false);
           setShowModal(true);
         }}
-        className={`w-full text-white px-4 py-2 rounded-lg shadow transition ${
+        className={`w-full text-white px-4 py-2 rounded-lg shadow transition mt-6 ${
           hasActiveRide
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700"
@@ -238,7 +288,7 @@ const DriverDashboard = () => {
         + Offer a New Ride
       </button>
 
-      {/* Ride Modal */}
+      {/* Ride Modal without geocoding status */}
       <RideModal
         showModal={showModal}
         isUpdating={isUpdating}

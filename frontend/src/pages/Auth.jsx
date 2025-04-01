@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../Store/userSlice';
-import { driverSignInWithEmail,signUpDriverWithEmail } from '../Store/driverSlice';
+import { driverSignInWithEmail,fetchDriverRides,signUpDriverWithEmail } from '../Store/driverSlice';
 const Auth = () => {
   const {loading} = useSelector(state => state.user);
+  const {driver} = useSelector(state => state.driver);
   const dispatch = useDispatch();
   const [userType, setUserType] = useState('customer');
   const [authMode, setAuthMode] = useState('login');
-  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,6 +17,8 @@ const Auth = () => {
     carModel: '',
     driverLicense: null
   });
+
+ 
 
   const handleChange = (e) => {
     setFormData({
@@ -59,7 +61,6 @@ const Auth = () => {
     // Driver authentication
     else if(userType === 'driver') {
       if(authMode === 'login') {
-        // You'll need to implement this action in your slice
         dispatch(driverSignInWithEmail({
           email: formData.email,
           password: formData.password
@@ -84,7 +85,7 @@ const Auth = () => {
           for (let pair of driverFormData.entries()) {
             console.log(pair[0], pair[1]);  // ✅ Logs key-value pairs properly
           }
-                    // You'll need to implement this action in your slice
+          
           dispatch(signUpDriverWithEmail(driverFormData))
             .unwrap()
             .then(() => {

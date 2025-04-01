@@ -1,18 +1,35 @@
 import React from 'react'
-import { Clock, Calendar, MapPin, Users, Car, Info, CreditCard } from 'lucide-react';
+import { Clock, Calendar, MapPin, Users, Car, Info, CreditCard, Navigation } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 const Rideinfo = ({rides}) => {
+  const navigate = useNavigate();
 
   // Handle booking a ride
-    const handleBookRide = (rideId) => {
-      console.log(`Booking ride with ID: ${rideId}`);
-      // This would redirect to booking process or show booking modal
-    };
-  
-    // Handle viewing ride details
-    const handleViewDetails = (rideId) => {
-      console.log(`Viewing details for ride with ID: ${rideId}`);
-      // This would redirect to ride details page or show details modal
-    };
+  const handleBooking = (rideId) => {
+    navigate(`/booking/${rideId}`);
+  };
+
+  // Handle viewing ride details
+  const handleViewDetails = (rideId) => {
+    console.log(`Viewing details for ride with ID: ${rideId}`);
+    // This would redirect to ride details page or show details modal
+  };
+
+  // Format duration to hours and minutes
+  const formatDuration = (minutes) => {
+    if (!minutes) return 'Unknown';
+    
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    } else {
+      return `${mins}m`;
+    }
+  };
+
   return (
     <>
     {rides.map((ride) => (
@@ -49,8 +66,20 @@ const Rideinfo = ({rides}) => {
             
             <div className="flex items-center mb-2">
               <Clock size={18} className="text-blue-500 mr-2 flex-shrink-0" />
-              <span>{ride.time} • 15m</span>
+              <span>{ride.time}</span>
             </div>
+            
+            {/* Display distance and estimated duration if available */}
+            {(ride.distance || ride.estimatedDuration) && (
+              <div className="flex items-center mb-2">
+                <Navigation size={18} className="text-blue-500 mr-2 flex-shrink-0" />
+                <span>
+                  {ride.distance ? `${ride.distance.toFixed(1)} km` : ''}
+                  {ride.distance && ride.estimatedDuration ? ' • ' : ''}
+                  {ride.estimatedDuration ? formatDuration(ride.estimatedDuration) : ''}
+                </span>
+              </div>
+            )}
             
             <div className="flex items-center mb-2">
               <Car size={18} className="text-blue-500 mr-2 flex-shrink-0" />
@@ -79,11 +108,11 @@ const Rideinfo = ({rides}) => {
                 View Details
               </button>
               <button 
-                onClick={() => handleBookRide(ride._id)} 
+                onClick={() => handleBooking(ride._id)} 
                 className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 <CreditCard size={16} className="mr-2" />
-                Book Ride
+                Book Now
               </button>
             </div>
           </div>
