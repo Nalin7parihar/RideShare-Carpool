@@ -117,7 +117,8 @@ const BookingForm = () => {
     }
 
     // Validate user
-    if (!user?.user?._id) {
+    console.log(user);
+    if (!user?._id) {
       toast.error("User information missing. Please log in again.");
       return;
     }
@@ -134,7 +135,7 @@ const BookingForm = () => {
 
       // Request booking via socket
       requestBooking({
-        customerId: user.user._id,
+        customerId: user._id,
         rideId: ride._id,
       }).catch((error) => {
         setIsWaitingForDriver(false);

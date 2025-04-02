@@ -73,7 +73,7 @@ const socketHandler = (io) => {
         if (accepted) {
           // Update ride with driver information
           ride.status = "Accepted";
-          await ride.save();
+          
 
           // Notify customer that driver accepted
           io.emit("driverResponse", {
@@ -92,6 +92,7 @@ const socketHandler = (io) => {
             message: "Driver rejected your ride request",
           });
         }
+        await ride.save();
       } catch (error) {
         console.error("Error processing booking response:", error);
         socket.emit("responseError", { message: "Failed to process response" });
