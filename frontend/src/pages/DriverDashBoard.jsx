@@ -11,6 +11,8 @@ import ActiveRideCard from "../components/ActiveRide";
 import NoRideCard from "../components/NoRideCard";
 import RideModal from "../components/RideModal";
 import AuthService from "../services/authService";
+import { useRideSocket } from "../hooks/useRideSocket";
+import { clearBookingRequests } from "../Store/socketSlice";
 
 const initialRideState = {
   from: "",
@@ -28,21 +30,35 @@ const DriverDashboard = () => {
   const driver = useSelector((state) => state.driver.driver);
   // Force re-render on rides state changes
   const rides = useSelector((state) => state.rides.rides);
-  
+  const {
+    connected,
+    reachedPickup,
+    startRide,
+    endRide,
+    rideStatuses,
+    pendingBookings,
+    respondToBooking,
+  } = useRideSocket();
+
   // Update filtering logic to properly get active rides from both sources
   const [updateKey, setUpdateKey] = useState(0);
   // State for driver's ride history
   const [driverRides, setDriverRides] = useState([]);
-  
+
   // Improved active ride detection - check both Redux store and local driverRides
-  const activeRidesFromStore = rides.filter(ride => ride?.ride?.status === "active");
-  const activeRidesFromHistory = driverRides.filter(ride => ride.status === "active");
-  
+  const activeRidesFromStore = rides.filter(
+    (ride) => ride?.ride?.status === "active"
+  );
+  const activeRidesFromHistory = driverRides.filter(
+    (ride) => ride.status === "active"
+  );
+
   // Combine active rides from both sources, prioritizing store data
-  const activeRides = activeRidesFromStore.length > 0 
-    ? activeRidesFromStore 
-    : activeRidesFromHistory.map(ride => ({ ride }));
-  
+  const activeRides =
+    activeRidesFromStore.length > 0
+      ? activeRidesFromStore
+      : activeRidesFromHistory.map((ride) => ({ ride }));
+
   // Get the most recent active ride
   const currentRide = activeRides.length > 0 ? activeRides[0] : null;
   const hasActiveRide = !!currentRide;
@@ -58,14 +74,15 @@ const DriverDashboard = () => {
         try {
           const rides = await AuthService.getDriverRides(driver.driver._id);
           setDriverRides(rides);
-          
+
           // Store in localStorage
-          localStorage.setItem('rides', JSON.stringify(rides));
-          
+          localStorage.setItem("rides", JSON.stringify(rides));
+
           // Force UI update when rides are fetched
-          setUpdateKey(prev => prev + 1);
+          setUpdateKey((prev) => prev + 1);
         } catch (error) {
           console.error("Failed to fetch driver rides:", error);
+          toast.error("Failed to fetch your ride history");
         }
       }
     };
@@ -79,7 +96,7 @@ const DriverDashboard = () => {
   // Load driver rides from localStorage on initial load
   useEffect(() => {
     if (driver) {
-      const storedRides = localStorage.getItem('rides');
+      const storedRides = localStorage.getItem("rides");
       if (storedRides) {
         setDriverRides(JSON.parse(storedRides));
       }
@@ -90,10 +107,10 @@ const DriverDashboard = () => {
   useEffect(() => {
     if (driver?.driver?._id) {
       // Dispatch an action to refresh rides from the server
-      dispatch({ type: 'driver/fetchDriverRides' });
-      
+      dispatch({ type: "driver/fetchDriverRides" });
+
       // Increment key to force component re-render
-      setUpdateKey(prev => prev + 1);
+      setUpdateKey((prev) => prev + 1);
     }
   }, [driver, dispatch]);
 
@@ -160,7 +177,7 @@ const DriverDashboard = () => {
       toast.error("You already have an active ride.");
       return;
     }
-    
+
     try {
       const isValid = validateRideDetails();
       if (!isValid) return;
@@ -174,7 +191,7 @@ const DriverDashboard = () => {
         time: time.trim(),
         date: date.trim(),
         seatsAvailable: parseInt(seatsAvailable),
-        price: parseFloat(price)
+        price: parseFloat(price),
         // Coordinates will be added by RideCard component
       };
 
@@ -225,6 +242,72 @@ const DriverDashboard = () => {
     }
   }, [currentRide, dispatch]);
 
+  // Socket handling functions
+  const handleAcceptBooking = useCallback(() => {
+    if (currentRide?.ride?._id && driver?.driver?._id) {
+      respondToBooking({
+        driverId: driver.driver._id,
+        rideId: currentRide.ride._id,
+        accepted: true,
+      });
+      dispatch(clearBookingRequests());
+      toast.success("You accepted the ride request");
+      // Force UI update
+      setUpdateKey((prev) => prev + 1);
+    }
+  }, [currentRide, driver, respondToBooking, dispatch]);
+
+  const handleDeclineBooking = useCallback(() => {
+    if (currentRide?.ride?._id && driver?.driver?._id) {
+      respondToBooking({
+        driverId: driver.driver._id,
+        rideId: currentRide.ride._id,
+        accepted: false,
+      });
+      dispatch(clearBookingRequests());
+      toast.info("You declined the ride request");
+      // Force UI update
+      setUpdateKey((prev) => prev + 1);
+    }
+  }, [currentRide, driver, respondToBooking, dispatch]);
+
+  // New socket handling functions
+  const handleStartRide = useCallback(() => {
+    if (currentRide?.ride?._id && driver?.driver?._id) {
+      startRide({
+        driverId: driver.driver._id,
+        rideId: currentRide.ride._id,
+      });
+      toast.success("Ride started successfully!");
+      // Force UI update
+      setUpdateKey((prev) => prev + 1);
+    }
+  }, [currentRide, driver, startRide]);
+
+  const handleEndRide = useCallback(() => {
+    if (currentRide?.ride?._id && driver?.driver?._id) {
+      endRide({
+        driverId: driver.driver._id,
+        rideId: currentRide.ride._id,
+      });
+      toast.success("Ride completed successfully!");
+      // Force UI update
+      setUpdateKey((prev) => prev + 1);
+    }
+  }, [currentRide, driver, endRide]);
+
+  const handleReachedPickup = useCallback(() => {
+    if (currentRide?.ride?._id && driver?.driver?._id) {
+      reachedPickup({
+        driverId: driver.driver._id,
+        rideId: currentRide.ride._id,
+      });
+      toast.success("Reached pickup location!");
+      // Force UI update
+      setUpdateKey((prev) => prev + 1);
+    }
+  }, [currentRide, driver, reachedPickup]);
+
   return (
     <div className="p-6 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -240,6 +323,14 @@ const DriverDashboard = () => {
             onUpdate={handleUpdateRide}
             onComplete={handleCompleteRide}
             onDelete={handleDeleteRide}
+            onStartRide={handleStartRide}
+            onEndRide={handleEndRide}
+            onReachedPickup={handleReachedPickup}
+            onAcceptBooking={handleAcceptBooking}
+            onDeclineBooking={handleDeclineBooking}
+            pendingBookings={pendingBookings}
+            socketConnected={connected}
+            rideStatuses={rideStatuses}
           />
         ) : (
           <NoRideCard />
@@ -249,21 +340,37 @@ const DriverDashboard = () => {
       {/* Driver Ride History Section */}
       {driverRides.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Ride History</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            Your Ride History
+          </h3>
           <div className="space-y-4">
             {driverRides.map((ride) => (
               <div key={ride._id} className="p-4 border rounded-lg shadow-sm">
                 <div className="flex justify-between">
                   <div>
-                    <p className="font-medium">{ride.from} → {ride.to}</p>
-                    <p className="text-sm text-gray-600">Date: {ride.date} at {ride.time}</p>
+                    <p className="font-medium">
+                      {ride.from} → {ride.to}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Date: {ride.date} at {ride.time}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-green-600">₹{ride.price}</p>
-                    <p className="text-sm text-gray-600">Status: <span className={`font-medium ${
-                      ride.status === 'completed' ? 'text-green-600' : 
-                      ride.status === 'active' ? 'text-blue-600' : 'text-gray-600'
-                    }`}>{ride.status}</span></p>
+                    <p className="text-sm text-gray-600">
+                      Status:{" "}
+                      <span
+                        className={`font-medium ${
+                          ride.status === "completed"
+                            ? "text-green-600"
+                            : ride.status === "active"
+                            ? "text-blue-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {ride.status}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>

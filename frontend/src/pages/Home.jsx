@@ -4,11 +4,30 @@ import RideCard from "../components/RideCard";
 import { motion } from "framer-motion";
 import AboutUsPopup from "../components/AboutUs";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 const Home = ({ formRef, scrollToForm }) => {
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { driver } = useSelector(state => state.driver);
+
+  const handleOfferRide = () => {
+    if (!driver) {
+      toast.error('Please login as a driver to offer rides', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      navigate("/Auth");
+      return;
+    }
+    navigate("/driver-dashboard");
+  };
 
   // Animation variants for consistent effects
   const fadeInUp = {
@@ -63,7 +82,7 @@ const Home = ({ formRef, scrollToForm }) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-white text-blue-600 px-8 py-3 rounded-full shadow-lg hover:bg-gray-100 transition font-semibold text-lg"
-              onClick={() => navigate("/driver-dashboard")}
+              onClick={handleOfferRide}
             >
               Offer a Ride
             </motion.button>

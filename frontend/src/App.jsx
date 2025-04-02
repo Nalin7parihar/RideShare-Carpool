@@ -2,7 +2,7 @@ import React from 'react'
 import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Page Imports
@@ -33,6 +33,14 @@ const App = () => {
   const ProtectedRoute = ({ children, requireDriver = false }) => {
     // If route requires driver and no driver is logged in
     if (requireDriver && !driver) {
+      toast.error('Please login as a driver to access this page', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return <Navigate to="/Auth" replace />;
     }
     

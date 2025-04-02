@@ -90,7 +90,7 @@ const Rideinfo = ({rides}) => {
           {/* Price and Booking Section */}
           <div className="md:w-1/4 flex flex-col items-center justify-between">
             <div className="text-center">
-              <div className="font-bold text-xl text-green-600">${ride.price.toFixed(2)}</div>
+              <div className="font-bold text-xl text-green-600">₹{ride.price.toFixed(2)}</div>
               <div className="text-sm text-gray-500">per seat</div>
             </div>
             

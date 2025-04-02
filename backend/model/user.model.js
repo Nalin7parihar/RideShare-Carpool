@@ -36,6 +36,14 @@ const customerSchema = new mongoose.Schema(
           default: "Pending",
         },
         bookingDate: { type: Date, default: Date.now },
+        distance: {
+          type: Number, // in kilometers
+          default: null,
+        },
+        estimatedDuration: {
+          type: Number, // in minutes
+          default: null,
+        },
       },
     ],
   },
