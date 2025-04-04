@@ -13,6 +13,7 @@ const BookingForm = () => {
   const [isWaitingForDriver, setIsWaitingForDriver] = useState(false);
   const [bookingTimedOut, setBookingTimedOut] = useState(false);
   const timeoutIdRef = useRef(null);
+  const [bookingSessionId, setBookingSessionId] = useState(null);
 
   // Get the specific ride from your rides state
   const ride = useSelector((state) =>
@@ -26,7 +27,7 @@ const BookingForm = () => {
 
   // Get socket-related functionality from the hook
   const { connected, rideStatuses, driverResponses, requestBooking } =
-    useRideSocket();
+    useRideSocket("customer");
 
   // Get current ride status from socket if available
   const currentRideStatus =
@@ -36,6 +37,8 @@ const BookingForm = () => {
   console.log("My User", user);
   console.log("Socket connected:", connected);
   console.log("Current ride status:", currentRideStatus);
+  console.log("Current driverResponses:", driverResponses);
+  console.log("Current bookingSessionId:", bookingSessionId);
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -54,10 +57,17 @@ const BookingForm = () => {
 
   // Listen for driver responses
   useEffect(() => {
-    // Check if there's a response for this ride
-    const response = driverResponses.find((resp) => resp.rideId === rideId);
+    if (!isWaitingForDriver || !bookingSessionId) {
+      return; // Don't process responses if we're not waiting or don't have a session ID
+    }
 
-    if (response && isWaitingForDriver) {
+    // Check if there's a response for this ride AND this booking session
+    const response = driverResponses.find(
+      (resp) => resp.rideId === rideId // Exact match for current session
+    );
+
+    console.log("Driver response:", response);
+    if (response) {
       // Clear the timeout since we got a response
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);
@@ -98,6 +108,7 @@ const BookingForm = () => {
   }, [
     driverResponses,
     rideId,
+    bookingSessionId,
     isWaitingForDriver,
     dispatch,
     navigate,
@@ -117,8 +128,7 @@ const BookingForm = () => {
     }
 
     // Validate user
-    console.log(user);
-    if (!user?._id) {
+    if (!user?.user?._id) {
       toast.error("User information missing. Please log in again.");
       return;
     }
@@ -130,17 +140,27 @@ const BookingForm = () => {
     }
 
     try {
+      // Reset states for new booking attempt
       setIsWaitingForDriver(true);
+      setBookingTimedOut(false);
+      setBookingSessionId(null); // Clear previous session ID
+
       toast.info("Sending request to available drivers...");
 
-      // Request booking via socket
-      requestBooking({
-        customerId: user._id,
+      // Request booking via socket and store the session ID
+      const result = await requestBooking({
+        customerId: user?.user?._id,
         rideId: ride._id,
       }).catch((error) => {
         setIsWaitingForDriver(false);
+        console.log("Request error", error);
         toast.error(`Request failed: ${error.message || "Unknown error"}`);
       });
+
+      if (result?.sessionId) {
+        setBookingSessionId(result.sessionId);
+        console.log("New booking session started:", result.sessionId);
+      }
 
       // Set a timeout for driver response
       timeoutIdRef.current = setTimeout(() => {

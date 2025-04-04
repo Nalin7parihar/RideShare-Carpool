@@ -13,7 +13,7 @@ export const socketToastMiddleware = (store) => (next) => (action) => {
   // Show toast notifications based on specific actions
   if (updateRideStatus.match(action)) {
     const { rideId, status } = action.payload;
-    toast.info(`Ride #${rideId} status updated to: ${status}`);
+    toast.info(`Ride  status updated to: ${status}`);
   }
 
   if (receiveBookingRequest.match(action)) {

@@ -23,23 +23,11 @@ export const bookRide = createAsyncThunk(
     try {
       const response = await axios.post(
         "http://localhost:8080/api/bookings",
-        bookingDetails,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        bookingDetails
       );
-
-      if (!response.ok) {
-        const error = await response.json();
-        return rejectWithValue(error.message);
-      }
-
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -86,7 +74,7 @@ const bookingSlice = createSlice({
       })
       .addCase(fetchUserBookings.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload.message || "Failed to fetch bookings";
+        state.error = action.payload?.message || "Failed to fetch bookings";
       });
   },
 });

@@ -47,6 +47,9 @@ export const initializeSocket = createAsyncThunk(
 
       socket.on("bookingConfirmation", (data) => {
         console.log("Booking confirmation received:", data);
+        // Clear any existing responses for this ride before adding the new confirmation
+        // This ensures we start fresh with each new booking session
+        dispatch(clearResponsesForRide(data.rideId));
         dispatch(receiveBookingRequest(data));
       });
 
@@ -135,7 +138,7 @@ export const emitEndRide = createAsyncThunk(
 
 export const emitNewBooking = createAsyncThunk(
   "socket/newBooking",
-  async ({ customerId, rideId }, { getState, rejectWithValue }) => {
+  async ({ customerId, rideId, sessionId }, { getState, rejectWithValue, dispatch }) => {
     try {
       const {
         socket: { connected },
@@ -145,8 +148,11 @@ export const emitNewBooking = createAsyncThunk(
         return rejectWithValue("Socket not connected");
       }
 
-      socket.emit("newBooking", { customerId, rideId });
-      return { customerId, rideId };
+      // Clear previous responses for this ride before sending a new booking request
+      dispatch(clearResponsesForRide(rideId));
+      
+      socket.emit("newBooking", { customerId, rideId, sessionId });
+      return { customerId, rideId, sessionId };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -155,7 +161,7 @@ export const emitNewBooking = createAsyncThunk(
 
 export const emitBookingResponse = createAsyncThunk(
   "socket/bookingResponse",
-  async ({ driverId, rideId, accepted }, { getState, rejectWithValue }) => {
+  async ({ driverId, rideId, accepted, sessionId }, { getState, rejectWithValue }) => {
     try {
       const {
         socket: { connected },
@@ -165,8 +171,8 @@ export const emitBookingResponse = createAsyncThunk(
         return rejectWithValue("Socket not connected");
       }
 
-      socket.emit("bookingResponse", { driverId, rideId, accepted });
-      return { driverId, rideId, accepted, status: accepted ? "Accepted" : "Rejected" };
+      socket.emit("bookingResponse", { driverId, rideId, accepted, sessionId });
+      return { driverId, rideId, accepted, sessionId, status: accepted ? "Accepted" : "Rejected" };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -216,16 +222,21 @@ const socketSlice = createSlice({
     receiveBookingRequest: (state, action) => {
       // Prevent duplicate pending bookings
       const exists = state.pendingBookings.some(
-        booking => booking.rideId === action.payload.rideId
+        booking => booking.rideId === action.payload.rideId && 
+                   booking.sessionId === action.payload.sessionId
       );
       if (!exists) {
         state.pendingBookings.push(action.payload);
       }
     },
+    
     receiveDriverResponse: (state, action) => {
-      // Prevent duplicate driver responses
+      const { rideId, sessionId } = action.payload;
+      
+      // Prevent duplicate driver responses for the same session
       const exists = state.driverResponses.some(
-        response => response.rideId === action.payload.rideId
+        response => response.rideId === rideId && 
+                    response.sessionId === sessionId
       );
       if (!exists) {
         state.driverResponses.push(action.payload);
@@ -236,6 +247,17 @@ const socketSlice = createSlice({
     },
     clearDriverResponses: (state) => {
       state.driverResponses = [];
+    },
+    clearResponsesForRide: (state, action) => {
+      const rideId = action.payload;
+      // Clear previous responses for this specific ride
+      state.driverResponses = state.driverResponses.filter(
+        response => response.rideId !== rideId
+      );
+      // Also clear pending bookings for this ride
+      state.pendingBookings = state.pendingBookings.filter(
+        booking => booking.rideId !== rideId
+      );
     },
     setError: (state, action) => {
       state.error = action.payload;
@@ -285,13 +307,33 @@ const socketSlice = createSlice({
         state.error = action.payload || action.error.message;
       })
 
+      .addCase(emitNewBooking.fulfilled, (state, action) => {
+        // Clear old responses for this ride when a new booking is made
+        const { rideId } = action.payload;
+        state.driverResponses = state.driverResponses.filter(
+          response => response.rideId !== rideId
+        );
+      })
       .addCase(emitNewBooking.rejected, (state, action) => {
         state.error = action.payload || action.error.message;
       })
 
       .addCase(emitBookingResponse.fulfilled, (state, action) => {
         // Update state with driver response
-        state.driverResponses.push(action.payload);
+        const newResponse = action.payload;
+        
+        // Check if we already have a response for this session
+        const existingIndex = state.driverResponses.findIndex(
+          resp => resp.rideId === newResponse.rideId && resp.sessionId === newResponse.sessionId
+        );
+        
+        if (existingIndex >= 0) {
+          // Update existing response
+          state.driverResponses[existingIndex] = newResponse;
+        } else {
+          // Add new response
+          state.driverResponses.push(newResponse);
+        }
       })
       .addCase(emitBookingResponse.rejected, (state, action) => {
         state.error = action.payload || action.error.message;
@@ -316,6 +358,7 @@ export const {
   receiveDriverResponse,
   clearBookingRequests,
   clearDriverResponses,
+  clearResponsesForRide,
   setError,
   clearError,
 } = socketSlice.actions;
