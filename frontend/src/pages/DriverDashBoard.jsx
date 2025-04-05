@@ -126,6 +126,7 @@ const DriverDashboard = () => {
         price: currentRide.ride.price || "",
         fromCoordinates: currentRide.ride.fromCoordinates || null,
         toCoordinates: currentRide.ride.toCoordinates || null,
+        status: currentRide.ride.status || "active",
       });
       setIsUpdating(true);
       setShowModal(true);
@@ -167,7 +168,8 @@ const DriverDashboard = () => {
       const isValid = validateRideDetails();
       if (!isValid) return;
 
-      const { from, to, time, date, seatsAvailable, price } = rideDetails;
+      const { from, to, time, date, seatsAvailable, price, status } =
+        rideDetails;
 
       const newRide = {
         id: isUpdating ? currentRide?.ride?._id : driver?.driver?._id,
@@ -177,6 +179,7 @@ const DriverDashboard = () => {
         date: date.trim(),
         seatsAvailable: parseInt(seatsAvailable),
         price: parseFloat(price),
+        status: isUpdating ? status : "active",
       };
 
       if (isUpdating) {

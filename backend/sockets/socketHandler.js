@@ -49,7 +49,6 @@ const socketHandler = (io) => {
           customerId,
           rideId,
           seats,
-          message: `${user.name} is requesting a ride for ${seats} seat(s)`,
         });
       } catch (error) {
         console.error("Error processing new booking:", error);
