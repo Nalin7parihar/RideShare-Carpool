@@ -9,7 +9,7 @@ export const initializeSocket = createAsyncThunk(
   async ( payload, {dispatch, rejectWithValue }) => {
     try {
       // Use the provided serverUrl or fall back to an environment variable
-      const socketUrl = "http://localhost:8080";
+      const socketUrl = "https://rideshare-carpool.onrender.com";
 
       if (!socketUrl) {
         return rejectWithValue("Socket server URL is required");

@@ -7,7 +7,7 @@ export const fetchUserBookings = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/bookings/user/${userId}`
+        `https://rideshare-carpool.onrender.com/api/bookings/user/${userId}`
       );
       return response.data;
     } catch (error) {
@@ -22,7 +22,7 @@ export const bookRide = createAsyncThunk(
   async (bookingDetails, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/bookings",
+        "https://rideshare-carpool.onrender.com/api/bookings",
         bookingDetails
       );
       return response.data;

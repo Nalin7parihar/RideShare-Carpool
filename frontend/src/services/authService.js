@@ -33,7 +33,7 @@ const AuthService = {
   signUpwithEmail: async (email, password, displayName = "") => {
     try {
       // Call your backend API endpoint for registration using axios
-      const response = await axios.post("http://localhost:8080/api/users/", {
+      const response = await axios.post("https://rideshare-carpool.onrender.com/api/users/", {
         email,
         password,
         name: displayName,
@@ -67,7 +67,7 @@ const AuthService = {
     try {
       // Call your backend API endpoint for login using axios
       const response = await axios.post(
-        "http://localhost:8080/api/users/login",
+        "https://rideshare-carpool.onrender.com/api/users/login",
         {
           email,
           password,
@@ -97,7 +97,7 @@ const AuthService = {
   signUpDriverWithEmail: async (formData) => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/driver/",
+        "https://rideshare-carpool.onrender.com/api/driver/",
         formData
       );
       console.log("Driver registered:", response.data);
@@ -121,7 +121,7 @@ const AuthService = {
   driverSignInwithEmail: async (email, password) => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/driver/login",
+        "https://rideshare-carpool.onrender.com/api/driver/login",
         {
           email,
           password,
@@ -146,7 +146,7 @@ const AuthService = {
   getDriverRides: async (driverId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/rides/driver/${driverId}`
+        `https://rideshare-carpool.onrender.com/api/rides/driver/${driverId}`
       );
       console.log(response.data);
       return response.data;
