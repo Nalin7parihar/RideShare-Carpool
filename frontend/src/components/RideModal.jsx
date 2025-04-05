@@ -65,6 +65,16 @@ const RideModal = ({
               className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500"
               onChange={handleInputChange}
             />
+            {isUpdating && (
+              <select
+                name="status"
+                value={rideDetails.status || "active"}
+                className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500"
+                onChange={handleInputChange}
+              >
+                <option value="active">Active</option>
+              </select>
+            )}
             <div className="flex justify-end space-x-2">
               <button
                 onClick={handleCancel}

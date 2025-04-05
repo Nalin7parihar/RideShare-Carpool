@@ -119,7 +119,6 @@ export const useRideSocket = (userType = null) => {
         const message = accepted
           ? "Accepting ride request..."
           : "Declining ride request...";
-        toast.info(message);
       }
       
       return dispatch(emitBookingResponse({ driverId, rideId, accepted, sessionId }))
@@ -129,7 +128,6 @@ export const useRideSocket = (userType = null) => {
             const successMessage = accepted 
               ? "You accepted the ride request" 
               : "You declined the ride request";
-            toast.success(successMessage);
           }
           return result;
         })
