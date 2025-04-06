@@ -1,6 +1,6 @@
 # 🚗 RideShare - Car Pooling & Ride-Sharing Web Platform
 
-A full-stack MERN-based carpooling platform that connects drivers offering rides and passengers searching for shared travel options. This project emphasizes real-time updates, secure user authentication, and a smooth user experience.
+A full-stack MERN-based carpooling platform that connects drivers offering rides and passengers searching for shared travel options. This project emphasizes real-time updates, secure user authentication, and a smooth user experience.i built this project as an inspiration to learn BackEnd Development.
 
 ---
 
